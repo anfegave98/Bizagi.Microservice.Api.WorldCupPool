@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool.Abstractions/Bizagi.Microservice.Api.WorldCupPool.Abstractions.csproj" Id="8f83ed5b-a4c8-402b-870f-3db02af7edac" />
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool.Data.Transfer.Object/Bizagi.Microservice.Api.WorldCupPool.Data.Transfer.Object.csproj" Id="a0bb25ed-048b-4047-8c21-193bc554c773" />
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool.Entities/Bizagi.Microservice.Api.WorldCupPool.Entities.csproj" Id="12e3f3d0-d396-4349-b565-ca744e9c026f" />
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool.EntityFramework/Bizagi.Microservice.Api.WorldCupPool.EntityFramework.csproj" Id="13f41b85-9d37-46f1-9705-1f675b0b81d2" />
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool.Logic/Bizagi.Microservice.Api.WorldCupPool.Logic.csproj" Id="2ae438a8-7722-4ac7-8c91-a3753de5c8d9" />
+    <Project Path="src/Bizagi.Microservice.Api.WorldCupPool/Bizagi.Microservice.Api.WorldCupPool.csproj" />
+  </Folder>
+</Solution>

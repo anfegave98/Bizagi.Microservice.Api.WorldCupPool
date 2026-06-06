@@ -1,0 +1,6 @@
+@Bizagi.Microservice.Api.WorldCupPool_HostAddress = http://localhost:5277
+
+GET {{Bizagi.Microservice.Api.WorldCupPool_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
