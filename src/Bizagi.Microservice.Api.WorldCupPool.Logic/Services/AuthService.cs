@@ -7,6 +7,8 @@ namespace Bizagi.Microservice.Api.WorldCupPool.Logic.Services;
 
 /// <summary>
 /// Implementación del servicio de autenticación y registro de usuarios.
+/// El descifrado del body ya fue realizado por <c>DecryptionMiddleware</c>
+/// antes de llegar a este servicio, por lo que siempre trabaja con texto plano.
 /// </summary>
 public class AuthService : IAuthService
 {
@@ -35,6 +37,10 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// El body llega ya descifrado desde <c>DecryptionMiddleware</c>.
+    /// La contraseña se recibe en texto plano y se hashea con HMACSHA512.
+    /// </remarks>
     public async Task<AuthUserDto> RegisterAsync(RegisterUserDto dto)
     {
         if (await _userRepository.ExistsByUserNameAsync(dto.UserName))
@@ -46,6 +52,7 @@ public class AuthService : IAuthService
         var userRole = await _roleRepository.GetByNameAsync("User")
             ?? throw new InvalidOperationException("El rol 'User' no está configurado en el sistema.");
 
+        // Contraseña en texto plano — el DecryptionMiddleware ya descifró el body AES
         _passwordService.CreateHash(dto.Password, out var hash, out var salt);
 
         var user = new User
@@ -63,8 +70,8 @@ public class AuthService : IAuthService
             {
                 new()
                 {
-                    IdRole = userRole.Id,
-                    State = true,
+                    IdRole      = userRole.Id,
+                    State       = true,
                     DateCreated = DateTime.UtcNow
                 }
             }
@@ -85,12 +92,16 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// El body llega ya descifrado desde <c>DecryptionMiddleware</c>.
+    /// La contraseña se recibe en texto plano y se verifica contra el hash almacenado.
+    /// </remarks>
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
     {
-        // Buscar por nombre de usuario o email
         var user = await _userRepository.GetByUserNameAsync(dto.UserNameOrEmail)
                    ?? await _userRepository.GetByEmailAsync(dto.UserNameOrEmail);
 
+        // Contraseña en texto plano — el DecryptionMiddleware ya descifró el body AES
         if (user is null || !_passwordService.VerifyHash(dto.Password, user.PasswordHash, user.PasswordSalt!))
             throw new UnauthorizedAccessException("Credenciales inválidas.");
 

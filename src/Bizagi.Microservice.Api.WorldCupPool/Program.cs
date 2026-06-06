@@ -17,16 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 // ─── Opciones tipadas ─────────────────────────────────────────────────────
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
-
 builder.Services.Configure<SwaggerOptions>(
     builder.Configuration.GetSection(SwaggerOptions.SectionName));
-
 builder.Services.Configure<CorsOptions>(
     builder.Configuration.GetSection(CorsOptions.SectionName));
-
 builder.Services.Configure<EncryptionOptions>(
     builder.Configuration.GetSection(EncryptionOptions.SectionName));
-
 builder.Services.Configure<RateLimitingOptions>(
     builder.Configuration.GetSection(RateLimitingOptions.SectionName));
 
@@ -125,7 +121,9 @@ if (swaggerEnabled)
         {
             Title = "Polla Mundialista API",
             Version = "v1",
-            Description = "API para la gestión de predicciones del Mundial de Fútbol."
+            Description = "API para la gestión de predicciones del Mundial de Fútbol. " +
+                          "⚠️ En desarrollo (Encryption:Enabled=false) los endpoints críticos " +
+                          "aceptan y devuelven JSON en texto plano — Swagger funciona con normalidad."
         });
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -135,7 +133,7 @@ if (swaggerEnabled)
             Scheme = "Bearer",
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Description = "Ingrese el token JWT con el formato: Bearer {token}"
+            Description = "Ingrese: Bearer {token}"
         });
 
         c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -153,7 +151,6 @@ if (swaggerEnabled)
             }
         });
 
-        // Incluir documentación XML de todos los proyectos con GenerateDocumentationFile=true
         var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
         foreach (var xmlFile in xmlFiles)
             c.IncludeXmlComments(xmlFile);
@@ -164,31 +161,46 @@ if (swaggerEnabled)
 var app = builder.Build();
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ─── 1. Manejo global de excepciones (debe ser el primer middleware) ───────
-app.UseMiddleware<GlobalExceptionMiddleware>();
+// ─── Pipeline de middlewares ───────────────────────────────────────────────
+//
+//  Orden crítico:
+//
+//  1. GlobalException          → captura cualquier error de todo el pipeline
+//  2. EncryptionResponse       → envuelve el stream de respuesta ANTES de ejecutar
+//                                el resto, para poder capturar y cifrar lo que
+//                                escriba el controller
+//  3. Decryption               → descifra el body del request entrante
+//  4. RateLimiting             → evalúa límites
+//  5. Swagger                  → solo en desarrollo
+//  6. HttpsRedirection
+//  7. CORS
+//  8. Authentication           → valida JWT
+//  9. Authorization            → valida roles
+// 10. Controllers              → procesa la solicitud y escribe la respuesta
+//                                (que será capturada y cifrada por el paso 2)
 
-// ─── 2. Rate limiting (antes de autenticación para bloquear tráfico abusivo)
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<EncryptionResponseMiddleware>(); // ← cifra la respuesta
+app.UseMiddleware<DecryptionMiddleware>();          // ← descifra el request
 app.UseMiddleware<RateLimitingMiddleware>();
 
-// ─── 3. Swagger (solo en ambientes autorizados) ────────────────────────────
 if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Polla Mundialista API v1");
-        c.RoutePrefix = string.Empty; // Swagger accesible en la raíz
+        c.RoutePrefix = string.Empty;
     });
 }
 
-// ─── 4. Pipeline HTTP ──────────────────────────────────────────────────────
 app.UseHttpsRedirection();
 app.UseCors("WorldCupPoolCors");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ─── 5. Seeder automático al iniciar ──────────────────────────────────────
+// ─── Seeder automático ────────────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
