@@ -18,12 +18,12 @@ public interface IMatchRepository
     /// </summary>
     /// <param name="matchId">Identificador del partido.</param>
     /// <returns>El partido encontrado o null.</returns>
-    Task<Match?> GetByIdAsync(decimal matchId);
+    Task<Match?> GetByIdAsync(int matchId);
 
     /// <summary>
     /// Actualiza el estado de un partido.
     /// </summary>
     /// <param name="matchId">Identificador del partido.</param>
     /// <param name="status">Nuevo estado del partido.</param>
-    Task UpdateStatusAsync(decimal matchId, string status);
+    Task UpdateStatusAsync(int matchId, string status);
 }

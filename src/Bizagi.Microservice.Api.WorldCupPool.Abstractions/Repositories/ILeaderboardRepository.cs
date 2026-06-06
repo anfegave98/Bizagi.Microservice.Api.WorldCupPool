@@ -24,5 +24,5 @@ public interface ILeaderboardRepository
     /// </summary>
     /// <param name="userId">Identificador del usuario cuyo historial se consulta.</param>
     /// <returns>Lista de entradas del historial ordenadas por fecha de partido ascendente.</returns>
-    Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(decimal userId);
+    Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(int userId);
 }

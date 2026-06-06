@@ -14,12 +14,12 @@ public interface IPredictionService
     /// <param name="dto">Datos de la predicción.</param>
     /// <param name="userId">Identificador del usuario autenticado obtenido desde el JWT.</param>
     /// <returns>Predicción creada o actualizada.</returns>
-    Task<PredictionDto> CreateOrUpdateAsync(PredictionCreateDto dto, decimal userId);
+    Task<PredictionDto> CreateOrUpdateAsync(PredictionCreateDto dto, int userId);
 
     /// <summary>
     /// Obtiene todas las predicciones activas del usuario autenticado.
     /// </summary>
     /// <param name="userId">Identificador del usuario autenticado obtenido desde el JWT.</param>
     /// <returns>Lista de predicciones del usuario.</returns>
-    Task<IEnumerable<PredictionDto>> GetMineAsync(decimal userId);
+    Task<IEnumerable<PredictionDto>> GetMineAsync(int userId);
 }

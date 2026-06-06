@@ -8,12 +8,12 @@ public class ScoreLog : BaseEntity
     /// <summary>
     /// Identificador de la predicción evaluada.
     /// </summary>
-    public decimal IdPrediction { get; set; }
+    public int IdPrediction { get; set; }
 
     /// <summary>
     /// Identificador del resultado real utilizado para el cálculo.
     /// </summary>
-    public decimal IdMatchResult { get; set; }
+    public int IdMatchResult { get; set; }
 
     /// <summary>
     /// Goles locales predichos por el usuario.

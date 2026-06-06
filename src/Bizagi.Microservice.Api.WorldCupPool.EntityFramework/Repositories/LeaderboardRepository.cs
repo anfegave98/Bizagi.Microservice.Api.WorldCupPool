@@ -73,7 +73,7 @@ public class LeaderboardRepository : ILeaderboardRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(decimal userId)
+    public async Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(int userId)
     {
         return await _context.Predictions
             .Where(p => p.IdUser == userId && p.State)

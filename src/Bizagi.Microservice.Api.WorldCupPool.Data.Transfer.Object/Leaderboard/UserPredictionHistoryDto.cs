@@ -9,7 +9,7 @@ public class UserPredictionHistoryDto
     /// <summary>
     /// Identificador del partido al que corresponde la predicción.
     /// </summary>
-    public decimal IdMatch { get; set; }
+    public int IdMatch { get; set; }
 
     /// <summary>
     /// Nombre del equipo local.

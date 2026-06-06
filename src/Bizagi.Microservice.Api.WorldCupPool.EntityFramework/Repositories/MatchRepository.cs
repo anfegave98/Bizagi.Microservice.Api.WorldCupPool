@@ -31,7 +31,7 @@ public class MatchRepository : IMatchRepository
     }
 
     /// <inheritdoc />
-    public async Task<Match?> GetByIdAsync(decimal matchId)
+    public async Task<Match?> GetByIdAsync(int matchId)
     {
         return await _context.Matches
             .Include(m => m.Group)
@@ -39,7 +39,7 @@ public class MatchRepository : IMatchRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateStatusAsync(decimal matchId, string status)
+    public async Task UpdateStatusAsync(int matchId, string status)
     {
         var match = await _context.Matches.FindAsync(matchId);
         if (match is not null)

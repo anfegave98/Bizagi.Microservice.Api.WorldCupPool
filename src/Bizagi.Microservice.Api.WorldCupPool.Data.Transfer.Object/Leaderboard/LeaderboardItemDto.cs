@@ -15,7 +15,7 @@ public class LeaderboardItemDto
     /// <summary>
     /// Identificador único del usuario.
     /// </summary>
-    public decimal IdUser { get; set; }
+    public int IdUser { get; set; }
 
     /// <summary>
     /// Nombre de usuario.

@@ -39,7 +39,7 @@ public class UserRepository : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<User?> GetByIdWithRolesAsync(decimal id)
+    public async Task<User?> GetByIdWithRolesAsync(int id)
     {
         return await _context.Users
             .Include(u => u.UserRoles)
@@ -70,7 +70,7 @@ public class UserRepository : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateLastLoginAsync(decimal userId)
+    public async Task UpdateLastLoginAsync(int userId)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user is not null)

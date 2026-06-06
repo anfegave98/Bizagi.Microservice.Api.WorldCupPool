@@ -52,10 +52,10 @@ public class LeaderboardController : ControllerBase
     /// <returns>Lista de entradas del historial del usuario, ordenadas por fecha de partido.</returns>
     /// <response code="200">Historial retornado exitosamente.</response>
     /// <response code="401">El usuario no está autenticado.</response>
-    [HttpGet("{userId:decimal}/history")]
+    [HttpGet("{userId:int}/history")]
     [ProducesResponseType(typeof(IEnumerable<UserPredictionHistoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetUserHistoryAsync([FromRoute] decimal userId)
+    public async Task<IActionResult> GetUserHistoryAsync([FromRoute] int userId)
     {
         var history = await _leaderboardService.GetUserHistoryAsync(userId);
         return Ok(history);

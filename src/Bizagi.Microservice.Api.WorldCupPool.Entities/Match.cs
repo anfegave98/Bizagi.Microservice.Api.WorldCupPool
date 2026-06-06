@@ -8,17 +8,17 @@ public class Match : BaseEntity
     /// <summary>
     /// Identificador del grupo al que pertenece el partido.
     /// </summary>
-    public decimal IdGroup { get; set; }
+    public int IdGroup { get; set; }
 
     /// <summary>
     /// Identificador del equipo local.
     /// </summary>
-    public decimal IdHomeTeam { get; set; }
+    public int IdHomeTeam { get; set; }
 
     /// <summary>
     /// Identificador del equipo visitante.
     /// </summary>
-    public decimal IdAwayTeam { get; set; }
+    public int IdAwayTeam { get; set; }
 
     /// <summary>
     /// Fecha y hora del partido.

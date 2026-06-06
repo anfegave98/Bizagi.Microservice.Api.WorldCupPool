@@ -23,7 +23,7 @@ public class Team : BaseEntity
     /// <summary>
     /// Identificador del grupo al que pertenece el equipo.
     /// </summary>
-    public decimal IdGroup { get; set; }
+    public int IdGroup { get; set; }
 
     /// <summary>
     /// Propiedad de navegación hacia el grupo.

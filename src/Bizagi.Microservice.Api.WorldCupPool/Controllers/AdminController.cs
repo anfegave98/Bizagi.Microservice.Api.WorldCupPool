@@ -39,14 +39,14 @@ public class AdminController : ControllerBase
     /// <response code="401">El usuario no está autenticado.</response>
     /// <response code="403">El usuario no tiene el rol Admin.</response>
     /// <response code="404">El partido no existe.</response>
-    [HttpPost("matches/{matchId:decimal}/result")]
+    [HttpPost("matches/{matchId:int}/result")]
     [ProducesResponseType(typeof(MatchResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RegisterResult(
-        [FromRoute] decimal matchId,
+        [FromRoute] int matchId,
         [FromBody] MatchResultCreateDto dto)
     {
         var adminUserId = GetCurrentUserId();
@@ -59,12 +59,12 @@ public class AdminController : ControllerBase
     /// </summary>
     /// <returns>Id del administrador autenticado.</returns>
     /// <exception cref="UnauthorizedAccessException">Si el claim no existe o es inválido.</exception>
-    private decimal GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? User.FindFirstValue("sub");
 
-        if (string.IsNullOrWhiteSpace(sub) || !decimal.TryParse(sub, out var userId))
+        if (string.IsNullOrWhiteSpace(sub) || !int.TryParse(sub, out var userId))
             throw new UnauthorizedAccessException("No se pudo identificar el administrador autenticado.");
 
         return userId;

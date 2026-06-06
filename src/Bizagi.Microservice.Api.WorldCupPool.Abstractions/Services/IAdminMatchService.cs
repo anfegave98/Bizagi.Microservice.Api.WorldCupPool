@@ -15,5 +15,5 @@ public interface IAdminMatchService
     /// <param name="dto">Goles reales del partido.</param>
     /// <param name="adminUserId">Identificador del administrador autenticado obtenido desde el JWT.</param>
     /// <returns>Resultado registrado.</returns>
-    Task<MatchResultDto> RegisterResultAsync(decimal matchId, MatchResultCreateDto dto, decimal adminUserId);
+    Task<MatchResultDto> RegisterResultAsync(int matchId, MatchResultCreateDto dto, int adminUserId);
 }

@@ -21,7 +21,7 @@ public class MatchResultRepository : IMatchResultRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> ExistsByMatchIdAsync(decimal matchId)
+    public async Task<bool> ExistsByMatchIdAsync(int matchId)
     {
         return await _context.MatchResults
             .AnyAsync(mr => mr.IdMatch == matchId && mr.State);

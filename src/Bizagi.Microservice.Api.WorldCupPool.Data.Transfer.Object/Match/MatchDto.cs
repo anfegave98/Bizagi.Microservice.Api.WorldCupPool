@@ -8,12 +8,12 @@ public class MatchDto
     /// <summary>
     /// Identificador único del partido.
     /// </summary>
-    public decimal Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Identificador del grupo al que pertenece el partido.
     /// </summary>
-    public decimal IdGroup { get; set; }
+    public int IdGroup { get; set; }
 
     /// <summary>
     /// Nombre del grupo (e.g. "Grupo A").
@@ -23,7 +23,7 @@ public class MatchDto
     /// <summary>
     /// Identificador del equipo local.
     /// </summary>
-    public decimal IdHomeTeam { get; set; }
+    public int IdHomeTeam { get; set; }
 
     /// <summary>
     /// Nombre del equipo local.
@@ -33,7 +33,7 @@ public class MatchDto
     /// <summary>
     /// Identificador del equipo visitante.
     /// </summary>
-    public decimal IdAwayTeam { get; set; }
+    public int IdAwayTeam { get; set; }
 
     /// <summary>
     /// Nombre del equipo visitante.

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 {
     [DbContext(typeof(WorldCupPoolDbContext))]
-    [Migration("20260606053610_Migration001")]
+    [Migration("20260606174129_Migration001")]
     partial class Migration001
     {
         /// <inheritdoc />
@@ -27,9 +27,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.Group", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
@@ -55,9 +57,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.Match", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AwayTeamName")
                         .IsRequired()
@@ -75,14 +79,14 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<decimal>("IdAwayTeam")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdAwayTeam")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("IdGroup")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdGroup")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("IdHomeTeam")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdHomeTeam")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("MatchDate")
                         .HasColumnType("timestamp with time zone");
@@ -117,9 +121,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.MatchResult", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AwayGoals")
                         .HasColumnType("integer");
@@ -133,11 +139,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                     b.Property<int>("HomeGoals")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("IdMatch")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdMatch")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("RegisteredByUserId")
-                        .HasColumnType("numeric");
+                    b.Property<int>("RegisteredByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("RegisteredDate")
                         .HasColumnType("timestamp with time zone");
@@ -157,9 +163,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.Prediction", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AwayGoals")
                         .HasColumnType("integer");
@@ -176,11 +184,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                     b.Property<int>("HomeGoals")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("IdMatch")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdMatch")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("IdUser")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdUser")
+                        .HasColumnType("integer");
 
                     b.Property<int>("IdUserCreator")
                         .HasColumnType("integer");
@@ -212,9 +220,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.Role", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
@@ -243,9 +253,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.ScoreLog", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CalculationDate")
                         .HasColumnType("timestamp with time zone");
@@ -253,11 +265,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("IdMatchResult")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdMatchResult")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("IdPrediction")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdPrediction")
+                        .HasColumnType("integer");
 
                     b.Property<int>("PointsAssigned")
                         .HasColumnType("integer");
@@ -295,9 +307,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.Team", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -311,8 +325,8 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<decimal>("IdGroup")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -333,9 +347,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.User", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
@@ -396,18 +412,20 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
 
             modelBuilder.Entity("Bizagi.Microservice.Api.WorldCupPool.Entities.UserRole", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("IdRole")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdRole")
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("IdUser")
-                        .HasColumnType("numeric");
+                    b.Property<int>("IdUser")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("State")
                         .ValueGeneratedOnAdd()

@@ -27,7 +27,7 @@ public class PredictionService : IPredictionService
     }
 
     /// <inheritdoc />
-    public async Task<PredictionDto> CreateOrUpdateAsync(PredictionCreateDto dto, decimal userId)
+    public async Task<PredictionDto> CreateOrUpdateAsync(PredictionCreateDto dto, int userId)
     {
         var match = await _matchRepository.GetByIdAsync(dto.IdMatch)
             ?? throw new KeyNotFoundException($"El partido con Id {dto.IdMatch} no existe o no está disponible.");
@@ -68,7 +68,7 @@ public class PredictionService : IPredictionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<PredictionDto>> GetMineAsync(decimal userId)
+    public async Task<IEnumerable<PredictionDto>> GetMineAsync(int userId)
     {
         var predictions = await _predictionRepository.GetAllByUserAsync(userId);
 

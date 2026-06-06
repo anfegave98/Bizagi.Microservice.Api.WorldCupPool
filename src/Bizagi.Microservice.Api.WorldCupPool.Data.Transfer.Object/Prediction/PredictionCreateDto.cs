@@ -12,7 +12,7 @@ public class PredictionCreateDto
     /// Identificador del partido a predecir.
     /// </summary>
     [Required(ErrorMessage = "El identificador del partido es requerido.")]
-    public decimal IdMatch { get; set; }
+    public int IdMatch { get; set; }
 
     /// <summary>
     /// Goles predichos para el equipo local. Debe ser mayor o igual a cero.

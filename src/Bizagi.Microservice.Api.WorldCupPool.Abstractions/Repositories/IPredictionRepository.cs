@@ -13,21 +13,21 @@ public interface IPredictionRepository
     /// <param name="userId">Identificador del usuario.</param>
     /// <param name="matchId">Identificador del partido.</param>
     /// <returns>La predicción encontrada o null.</returns>
-    Task<Prediction?> GetByUserAndMatchAsync(decimal userId, decimal matchId);
+    Task<Prediction?> GetByUserAndMatchAsync(int userId, int matchId);
 
     /// <summary>
     /// Obtiene todas las predicciones activas de un usuario, incluyendo datos del partido.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
     /// <returns>Lista de predicciones del usuario.</returns>
-    Task<IEnumerable<Prediction>> GetAllByUserAsync(decimal userId);
+    Task<IEnumerable<Prediction>> GetAllByUserAsync(int userId);
 
     /// <summary>
     /// Obtiene todas las predicciones activas para un partido específico.
     /// </summary>
     /// <param name="matchId">Identificador del partido.</param>
     /// <returns>Lista de predicciones del partido.</returns>
-    Task<IEnumerable<Prediction>> GetAllByMatchAsync(decimal matchId);
+    Task<IEnumerable<Prediction>> GetAllByMatchAsync(int matchId);
 
     /// <summary>
     /// Crea una nueva predicción.

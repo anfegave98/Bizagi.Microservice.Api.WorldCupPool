@@ -8,7 +8,7 @@ public class MatchResult : BaseEntity
     /// <summary>
     /// Identificador del partido al que corresponde el resultado.
     /// </summary>
-    public decimal IdMatch { get; set; }
+    public int IdMatch { get; set; }
 
     /// <summary>
     /// Goles reales del equipo local.
@@ -23,7 +23,7 @@ public class MatchResult : BaseEntity
     /// <summary>
     /// Identificador del usuario administrador que registró el resultado.
     /// </summary>
-    public decimal RegisteredByUserId { get; set; }
+    public int RegisteredByUserId { get; set; }
 
     /// <summary>
     /// Fecha y hora en que se registró el resultado.

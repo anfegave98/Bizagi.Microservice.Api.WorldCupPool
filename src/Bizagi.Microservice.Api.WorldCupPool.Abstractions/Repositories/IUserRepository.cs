@@ -26,7 +26,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="id">Identificador del usuario.</param>
     /// <returns>El usuario encontrado con roles o null.</returns>
-    Task<User?> GetByIdWithRolesAsync(decimal id);
+    Task<User?> GetByIdWithRolesAsync(int id);
 
     /// <summary>
     /// Verifica si ya existe un usuario con el nombre de usuario dado.
@@ -53,5 +53,5 @@ public interface IUserRepository
     /// Actualiza la fecha del último inicio de sesión del usuario.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
-    Task UpdateLastLoginAsync(decimal userId);
+    Task UpdateLastLoginAsync(int userId);
 }

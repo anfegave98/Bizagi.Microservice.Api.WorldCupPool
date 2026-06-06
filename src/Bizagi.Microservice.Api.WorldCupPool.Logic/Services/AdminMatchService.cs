@@ -32,7 +32,7 @@ public class AdminMatchService : IAdminMatchService
     }
 
     /// <inheritdoc />
-    public async Task<MatchResultDto> RegisterResultAsync(decimal matchId, MatchResultCreateDto dto, decimal adminUserId)
+    public async Task<MatchResultDto> RegisterResultAsync(int matchId, MatchResultCreateDto dto, int adminUserId)
     {
         var match = await _matchRepository.GetByIdAsync(matchId)
             ?? throw new KeyNotFoundException($"El partido con Id {matchId} no existe o no está disponible.");

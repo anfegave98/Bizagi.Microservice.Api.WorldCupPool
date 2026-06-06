@@ -35,7 +35,7 @@ public class ScoreCalculationService : IScoreCalculationService
     }
 
     /// <inheritdoc />
-    public async Task CalculateAsync(decimal matchId, decimal matchResultId, int realHomeGoals, int realAwayGoals)
+    public async Task CalculateAsync(int matchId, int matchResultId, int realHomeGoals, int realAwayGoals)
     {
         _logger.LogInformation("Iniciando cálculo de puntos para el partido {MatchId}.", matchId);
 

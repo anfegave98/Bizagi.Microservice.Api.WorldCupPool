@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,7 +16,8 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Groups",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Description = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                     State = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
@@ -30,7 +32,8 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Roles",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     State = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
@@ -45,7 +48,8 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
@@ -67,11 +71,12 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Teams",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     FlagUrl = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    IdGroup = table.Column<decimal>(type: "numeric", nullable: false),
+                    IdGroup = table.Column<int>(type: "integer", nullable: false),
                     State = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     DateCreated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -90,9 +95,10 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "UserRoles",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdUser = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdRole = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdUser = table.Column<int>(type: "integer", nullable: false),
+                    IdRole = table.Column<int>(type: "integer", nullable: false),
                     State = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     DateCreated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -117,10 +123,11 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Matches",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdGroup = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdHomeTeam = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdAwayTeam = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdGroup = table.Column<int>(type: "integer", nullable: false),
+                    IdHomeTeam = table.Column<int>(type: "integer", nullable: false),
+                    IdAwayTeam = table.Column<int>(type: "integer", nullable: false),
                     MatchDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Scheduled"),
                     RoundName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -157,11 +164,12 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "MatchResults",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdMatch = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdMatch = table.Column<int>(type: "integer", nullable: false),
                     HomeGoals = table.Column<int>(type: "integer", nullable: false),
                     AwayGoals = table.Column<int>(type: "integer", nullable: false),
-                    RegisteredByUserId = table.Column<decimal>(type: "numeric", nullable: false),
+                    RegisteredByUserId = table.Column<int>(type: "integer", nullable: false),
                     RegisteredDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DateModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     State = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
@@ -182,9 +190,10 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "Predictions",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdUser = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdMatch = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdUser = table.Column<int>(type: "integer", nullable: false),
+                    IdMatch = table.Column<int>(type: "integer", nullable: false),
                     HomeGoals = table.Column<int>(type: "integer", nullable: false),
                     AwayGoals = table.Column<int>(type: "integer", nullable: false),
                     Points = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
@@ -216,9 +225,10 @@ namespace Bizagi.Microservice.Api.WorldCupPool.EntityFramework.Migrations
                 name: "ScoreLogs",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdPrediction = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdMatchResult = table.Column<decimal>(type: "numeric", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IdPrediction = table.Column<int>(type: "integer", nullable: false),
+                    IdMatchResult = table.Column<int>(type: "integer", nullable: false),
                     PredictedHomeGoals = table.Column<int>(type: "integer", nullable: false),
                     PredictedAwayGoals = table.Column<int>(type: "integer", nullable: false),
                     RealHomeGoals = table.Column<int>(type: "integer", nullable: false),

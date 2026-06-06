@@ -8,12 +8,12 @@ public class Prediction : BaseEntity
     /// <summary>
     /// Identificador del usuario que realizó la predicción.
     /// </summary>
-    public decimal IdUser { get; set; }
+    public int IdUser { get; set; }
 
     /// <summary>
     /// Identificador del partido al que corresponde la predicción.
     /// </summary>
-    public decimal IdMatch { get; set; }
+    public int IdMatch { get; set; }
 
     /// <summary>
     /// Goles predichos para el equipo local.

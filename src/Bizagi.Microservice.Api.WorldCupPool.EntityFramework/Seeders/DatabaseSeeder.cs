@@ -60,7 +60,6 @@ public class DatabaseSeeder
         _context.Roles.AddRange(
             new Role
             {
-                Id = 1,
                 Name = "Admin",
                 Description = "Administrador del sistema con acceso total.",
                 State = true,
@@ -68,7 +67,6 @@ public class DatabaseSeeder
             },
             new Role
             {
-                Id = 2,
                 Name = "User",
                 Description = "Usuario participante de la Polla Mundialista.",
                 State = true,
@@ -92,7 +90,6 @@ public class DatabaseSeeder
 
         var adminUser = new User
         {
-            Id = 1,
             UserName = "admin",
             FullName = "Administrador Sistema",
             Email = "admin@worldcuppool.com",
@@ -109,7 +106,6 @@ public class DatabaseSeeder
 
         _context.UserRoles.Add(new UserRole
         {
-            Id = 1,
             IdUser = adminUser.Id,
             IdRole = adminRole.Id,
             State = true,
@@ -128,7 +124,6 @@ public class DatabaseSeeder
 
         var groupA = new Group
         {
-            Id = 1,
             Name = "Grupo A",
             Description = "Fase de grupos — Grupo A",
             State = true,
@@ -137,7 +132,6 @@ public class DatabaseSeeder
 
         var groupB = new Group
         {
-            Id = 2,
             Name = "Grupo B",
             Description = "Fase de grupos — Grupo B",
             State = true,
@@ -149,15 +143,15 @@ public class DatabaseSeeder
 
         _context.Teams.AddRange(
             // Grupo A
-            new Team { Id = 1, Name = "Colombia",  Code = "COL", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 2, Name = "Brasil",    Code = "BRA", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 3, Name = "Argentina", Code = "ARG", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 4, Name = "Uruguay",   Code = "URU", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Colombia",  Code = "COL", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Brasil",    Code = "BRA", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Argentina", Code = "ARG", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Uruguay",   Code = "URU", IdGroup = groupA.Id, State = true, DateCreated = DateTime.UtcNow },
             // Grupo B
-            new Team { Id = 5, Name = "Francia",   Code = "FRA", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 6, Name = "Alemania",  Code = "GER", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 7, Name = "España",    Code = "ESP", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
-            new Team { Id = 8, Name = "Portugal",  Code = "POR", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow }
+            new Team { Name = "Francia",   Code = "FRA", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Alemania",  Code = "GER", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "España",    Code = "ESP", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow },
+            new Team { Name = "Portugal",  Code = "POR", IdGroup = groupB.Id, State = true, DateCreated = DateTime.UtcNow }
         );
 
         await _context.SaveChangesAsync();
@@ -187,23 +181,23 @@ public class DatabaseSeeder
 
         _context.Matches.AddRange(
             // Grupo A — Jornada 1
-            new Match { Id = 1, IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = bra.Id, HomeTeamName = col.Name, AwayTeamName = bra.Name, MatchDate = baseDate,                    RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 2, IdGroup = groupA.Id, IdHomeTeam = arg.Id, IdAwayTeam = uru.Id, HomeTeamName = arg.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddHours(3),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = bra.Id, HomeTeamName = col.Name, AwayTeamName = bra.Name, MatchDate = baseDate,                    RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = arg.Id, IdAwayTeam = uru.Id, HomeTeamName = arg.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddHours(3),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
             // Grupo A — Jornada 2
-            new Match { Id = 3, IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = arg.Id, HomeTeamName = col.Name, AwayTeamName = arg.Name, MatchDate = baseDate.AddDays(3),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 4, IdGroup = groupA.Id, IdHomeTeam = bra.Id, IdAwayTeam = uru.Id, HomeTeamName = bra.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddDays(3).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = arg.Id, HomeTeamName = col.Name, AwayTeamName = arg.Name, MatchDate = baseDate.AddDays(3),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = bra.Id, IdAwayTeam = uru.Id, HomeTeamName = bra.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddDays(3).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
             // Grupo A — Jornada 3
-            new Match { Id = 5, IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = uru.Id, HomeTeamName = col.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddDays(6),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 6, IdGroup = groupA.Id, IdHomeTeam = bra.Id, IdAwayTeam = arg.Id, HomeTeamName = bra.Name, AwayTeamName = arg.Name, MatchDate = baseDate.AddDays(6).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = col.Id, IdAwayTeam = uru.Id, HomeTeamName = col.Name, AwayTeamName = uru.Name, MatchDate = baseDate.AddDays(6),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupA.Id, IdHomeTeam = bra.Id, IdAwayTeam = arg.Id, HomeTeamName = bra.Name, AwayTeamName = arg.Name, MatchDate = baseDate.AddDays(6).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
             // Grupo B — Jornada 1
-            new Match { Id = 7, IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = ger.Id, HomeTeamName = fra.Name, AwayTeamName = ger.Name, MatchDate = baseDate.AddDays(1),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 8, IdGroup = groupB.Id, IdHomeTeam = esp.Id, IdAwayTeam = por.Id, HomeTeamName = esp.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(1).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = ger.Id, HomeTeamName = fra.Name, AwayTeamName = ger.Name, MatchDate = baseDate.AddDays(1),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupB.Id, IdHomeTeam = esp.Id, IdAwayTeam = por.Id, HomeTeamName = esp.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(1).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
             // Grupo B — Jornada 2
-            new Match { Id = 9, IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = esp.Id, HomeTeamName = fra.Name, AwayTeamName = esp.Name, MatchDate = baseDate.AddDays(4),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 10, IdGroup = groupB.Id, IdHomeTeam = ger.Id, IdAwayTeam = por.Id, HomeTeamName = ger.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(4).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = esp.Id, HomeTeamName = fra.Name, AwayTeamName = esp.Name, MatchDate = baseDate.AddDays(4),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupB.Id, IdHomeTeam = ger.Id, IdAwayTeam = por.Id, HomeTeamName = ger.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(4).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
             // Grupo B — Jornada 3
-            new Match { Id = 11, IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = por.Id, HomeTeamName = fra.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(7),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
-            new Match { Id = 12, IdGroup = groupB.Id, IdHomeTeam = ger.Id, IdAwayTeam = esp.Id, HomeTeamName = ger.Name, AwayTeamName = esp.Name, MatchDate = baseDate.AddDays(7).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow }
+            new Match { IdGroup = groupB.Id, IdHomeTeam = fra.Id, IdAwayTeam = por.Id, HomeTeamName = fra.Name, AwayTeamName = por.Name, MatchDate = baseDate.AddDays(7),         RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow },
+            new Match { IdGroup = groupB.Id, IdHomeTeam = ger.Id, IdAwayTeam = esp.Id, HomeTeamName = ger.Name, AwayTeamName = esp.Name, MatchDate = baseDate.AddDays(7).AddHours(3), RoundName = round, Status = MatchStatus.Scheduled, State = true, DateCreated = DateTime.UtcNow }
         );
 
         await _context.SaveChangesAsync();

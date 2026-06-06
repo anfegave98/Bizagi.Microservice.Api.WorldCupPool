@@ -9,7 +9,7 @@ public class AuthUserDto
     /// <summary>
     /// Identificador único del usuario.
     /// </summary>
-    public decimal Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Nombre de usuario.

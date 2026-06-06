@@ -13,5 +13,5 @@ public interface IScoreCalculationService
     /// <param name="matchResultId">Identificador del resultado real registrado.</param>
     /// <param name="realHomeGoals">Goles reales del equipo local.</param>
     /// <param name="realAwayGoals">Goles reales del equipo visitante.</param>
-    Task CalculateAsync(decimal matchId, decimal matchResultId, int realHomeGoals, int realAwayGoals);
+    Task CalculateAsync(int matchId, int matchResultId, int realHomeGoals, int realAwayGoals);
 }

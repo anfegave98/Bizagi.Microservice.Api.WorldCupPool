@@ -12,7 +12,7 @@ public interface IMatchResultRepository
     /// </summary>
     /// <param name="matchId">Identificador del partido.</param>
     /// <returns>True si existe un resultado activo, false en caso contrario.</returns>
-    Task<bool> ExistsByMatchIdAsync(decimal matchId);
+    Task<bool> ExistsByMatchIdAsync(int matchId);
 
     /// <summary>
     /// Crea un nuevo resultado de partido.

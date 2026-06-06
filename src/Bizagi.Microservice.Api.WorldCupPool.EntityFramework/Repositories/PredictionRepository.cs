@@ -21,7 +21,7 @@ public class PredictionRepository : IPredictionRepository
     }
 
     /// <inheritdoc />
-    public async Task<Prediction?> GetByUserAndMatchAsync(decimal userId, decimal matchId)
+    public async Task<Prediction?> GetByUserAndMatchAsync(int userId, int matchId)
     {
         return await _context.Predictions
             .Include(p => p.Match)
@@ -29,7 +29,7 @@ public class PredictionRepository : IPredictionRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Prediction>> GetAllByUserAsync(decimal userId)
+    public async Task<IEnumerable<Prediction>> GetAllByUserAsync(int userId)
     {
         return await _context.Predictions
             .Include(p => p.Match)
@@ -40,7 +40,7 @@ public class PredictionRepository : IPredictionRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Prediction>> GetAllByMatchAsync(decimal matchId)
+    public async Task<IEnumerable<Prediction>> GetAllByMatchAsync(int matchId)
     {
         return await _context.Predictions
             .Where(p => p.IdMatch == matchId && p.State)

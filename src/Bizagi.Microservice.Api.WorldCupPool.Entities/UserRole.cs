@@ -8,12 +8,12 @@ public class UserRole : BaseEntity
     /// <summary>
     /// Identificador del usuario.
     /// </summary>
-    public decimal IdUser { get; set; }
+    public int IdUser { get; set; }
 
     /// <summary>
     /// Identificador del rol.
     /// </summary>
-    public decimal IdRole { get; set; }
+    public int IdRole { get; set; }
 
     /// <summary>
     /// Propiedad de navegación hacia el usuario.

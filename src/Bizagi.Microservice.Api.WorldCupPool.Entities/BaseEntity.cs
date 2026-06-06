@@ -8,7 +8,7 @@ public abstract class BaseEntity
     /// <summary>
     /// Identificador único de la entidad.
     /// </summary>
-    public decimal Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Indica si el registro está activo (eliminación lógica).

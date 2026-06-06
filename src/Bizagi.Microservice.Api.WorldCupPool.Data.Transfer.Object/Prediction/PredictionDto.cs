@@ -8,17 +8,17 @@ public class PredictionDto
     /// <summary>
     /// Identificador único de la predicción.
     /// </summary>
-    public decimal Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Identificador del usuario propietario de la predicción.
     /// </summary>
-    public decimal IdUser { get; set; }
+    public int IdUser { get; set; }
 
     /// <summary>
     /// Identificador del partido al que corresponde la predicción.
     /// </summary>
-    public decimal IdMatch { get; set; }
+    public int IdMatch { get; set; }
 
     /// <summary>
     /// Nombre del equipo local del partido.

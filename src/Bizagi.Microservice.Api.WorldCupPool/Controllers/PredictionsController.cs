@@ -71,12 +71,12 @@ public class PredictionsController : ControllerBase
     /// </summary>
     /// <returns>Id del usuario autenticado.</returns>
     /// <exception cref="UnauthorizedAccessException">Si el claim no existe o es inválido.</exception>
-    private decimal GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? User.FindFirstValue("sub");
 
-        if (string.IsNullOrWhiteSpace(sub) || !decimal.TryParse(sub, out var userId))
+        if (string.IsNullOrWhiteSpace(sub) || !int.TryParse(sub, out var userId))
             throw new UnauthorizedAccessException("No se pudo identificar el usuario autenticado.");
 
         return userId;

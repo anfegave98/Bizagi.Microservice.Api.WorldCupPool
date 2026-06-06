@@ -28,7 +28,7 @@ public class LeaderboardService : ILeaderboardService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(decimal userId)
+    public async Task<IEnumerable<UserPredictionHistoryDto>> GetUserHistoryAsync(int userId)
     {
         return await _leaderboardRepository.GetUserHistoryAsync(userId);
     }
