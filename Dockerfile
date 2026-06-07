@@ -1,11 +1,6 @@
-# ─── Etapa 1: Build ───────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copiar el archivo de solución (.slnx — formato Visual Studio 2022)
-# y los .csproj de cada proyecto para restaurar dependencias primero
-# (aprovecha el cache de capas de Docker)
-COPY *.slnx ./
 COPY src/Bizagi.Microservice.Api.WorldCupPool/Bizagi.Microservice.Api.WorldCupPool.csproj \
      src/Bizagi.Microservice.Api.WorldCupPool/
 COPY src/Bizagi.Microservice.Api.WorldCupPool.Abstractions/Bizagi.Microservice.Api.WorldCupPool.Abstractions.csproj \
@@ -19,29 +14,18 @@ COPY src/Bizagi.Microservice.Api.WorldCupPool.EntityFramework/Bizagi.Microservic
 COPY src/Bizagi.Microservice.Api.WorldCupPool.Logic/Bizagi.Microservice.Api.WorldCupPool.Logic.csproj \
      src/Bizagi.Microservice.Api.WorldCupPool.Logic/
 
-# Restaurar dependencias apuntando directamente al proyecto principal
-# (más robusto que depender del .slnx para el restore)
 RUN dotnet restore src/Bizagi.Microservice.Api.WorldCupPool/Bizagi.Microservice.Api.WorldCupPool.csproj
 
-# Copiar el resto del código fuente
 COPY src/ src/
 
-# Publicar en modo Release
 RUN dotnet publish src/Bizagi.Microservice.Api.WorldCupPool/Bizagi.Microservice.Api.WorldCupPool.csproj \
     -c Release \
     -o /app/publish \
     --no-restore
 
-# ─── Etapa 2: Runtime ─────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-
-# Copiar solo los artefactos publicados
 COPY --from=build /app/publish .
-
-# Render asigna el puerto vía variable de entorno PORT
-# ASP.NET Core lo lee automáticamente con ASPNETCORE_URLS
 ENV ASPNETCORE_URLS=http://+:10000
 EXPOSE 10000
-
 ENTRYPOINT ["dotnet", "Bizagi.Microservice.Api.WorldCupPool.dll"]
