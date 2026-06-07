@@ -8,37 +8,22 @@ namespace Bizagi.Microservice.Api.WorldCupPool.Middlewares;
 
 /// <summary>
 /// Middleware de cifrado de respuestas para los endpoints críticos.
-/// Intercepta la respuesta JSON generada por el controller, cifra el body
-/// con AES-256-CBC y lo reemplaza con el wrapper <c>{ "data": "&lt;Base64&gt;" }</c>
-/// antes de enviarlo al cliente.
+/// Intercepta la respuesta JSON del controller, la cifra con AES-256-CBC
+/// y la reemplaza con el wrapper <c>{ "data": "&lt;Base64&gt;" }</c>.
 ///
-/// Endpoints cubiertos:
-/// <list type="bullet">
-///   <item>POST api/v1/auth/register</item>
-///   <item>POST api/v1/auth/login</item>
-///   <item>POST api/v1/predictions</item>
-///   <item>POST api/v1/admin/matches/{id}/result</item>
-/// </list>
+/// Preserva todos los headers de respuesta existentes (incluyendo CORS)
+/// al reemplazar únicamente el body, no el stream completo de respuesta.
 ///
-/// Cuando <see cref="EncryptionOptions.Enabled"/> es false (desarrollo),
-/// el middleware es completamente transparente y la respuesta viaja en texto plano,
-/// lo que permite usar Swagger con normalidad.
-///
-/// Orden en el pipeline: debe ir inmediatamente después de
-/// <see cref="GlobalExceptionMiddleware"/> y antes de <see cref="DecryptionMiddleware"/>,
-/// ya que necesita envolver el stream de respuesta antes de que el resto del
-/// pipeline lo escriba.
+/// Cuando <see cref="EncryptionOptions.Enabled"/> es false, el middleware
+/// es completamente transparente.
 /// </summary>
 public class EncryptionResponseMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly EncryptionOptions _options;
     private readonly ILogger<EncryptionResponseMiddleware> _logger;
 
-    /// <summary>
-    /// Rutas críticas cuyas respuestas deben cifrarse.
-    /// Se evalúan como prefijos para cubrir variantes dinámicas.
-    /// </summary>
     private static readonly string[] _encryptedRoutes =
     {
         "/api/v1/auth/register",
@@ -48,32 +33,29 @@ public class EncryptionResponseMiddleware
     };
 
     /// <summary>
-    /// Inicializa una nueva instancia del middleware de cifrado de respuestas.
+    /// Inicializa el middleware. Usa <see cref="IServiceScopeFactory"/> en lugar de
+    /// <see cref="IEncryptionService"/> directamente para evitar el error
+    /// "Cannot resolve scoped service from root provider", ya que los middlewares
+    /// son singleton por naturaleza del pipeline de ASP.NET Core.
     /// </summary>
-    /// <param name="next">Siguiente delegado en el pipeline.</param>
-    /// <param name="options">Opciones tipadas de configuración de cifrado.</param>
-    /// <param name="logger">Logger del middleware.</param>
     public EncryptionResponseMiddleware(
         RequestDelegate next,
+        IServiceScopeFactory scopeFactory,
         IOptions<EncryptionOptions> options,
         ILogger<EncryptionResponseMiddleware> logger)
     {
         _next = next;
+        _scopeFactory = scopeFactory;
         _options = options.Value;
         _logger = logger;
     }
 
     /// <summary>
-    /// Intercepta la solicitud, ejecuta el pipeline completo capturando la respuesta
-    /// en un buffer, la cifra si corresponde y la escribe en el stream original.
+    /// Captura la respuesta del controller en un buffer, la cifra y la reemplaza
+    /// preservando todos los headers HTTP originales (incluyendo CORS).
     /// </summary>
-    /// <param name="context">Contexto HTTP de la solicitud.</param>
-    /// <param name="encryptionService">Servicio de cifrado inyectado.</param>
-    public async Task InvokeAsync(
-    HttpContext context,
-    IEncryptionService encryptionService)
+    public async Task InvokeAsync(HttpContext context)
     {
-        // Si el cifrado está deshabilitado o la ruta no es crítica, pasar sin modificar
         if (!_options.Enabled
             || !HttpMethods.IsPost(context.Request.Method)
             || !IsEncryptedRoute(context.Request.Path))
@@ -82,17 +64,17 @@ public class EncryptionResponseMiddleware
             return;
         }
 
-        // Sustituir el stream de respuesta por un buffer para capturar lo que escriba el controller
+        // Sustituir el body de la respuesta por un buffer
         var originalBody = context.Response.Body;
         using var buffer = new MemoryStream();
         context.Response.Body = buffer;
 
         try
         {
-            // Ejecutar el resto del pipeline (controller escribe en el buffer)
+            // Ejecutar el resto del pipeline — el controller escribe en el buffer
             await _next(context);
 
-            // Leer el body generado por el controller
+            // Leer el body capturado
             buffer.Position = 0;
             using var reader = new StreamReader(buffer, Encoding.UTF8);
             var responseBody = await reader.ReadToEndAsync();
@@ -101,28 +83,38 @@ public class EncryptionResponseMiddleware
             if (!IsSuccessStatusCode(context.Response.StatusCode)
                 || string.IsNullOrWhiteSpace(responseBody))
             {
-                // Respuesta de error o vacía: devolver sin cifrar
-                // (los errores del GlobalExceptionMiddleware ya tienen su formato)
+                // Error o body vacío: devolver sin cifrar preservando headers
                 buffer.Position = 0;
+                context.Response.Body = originalBody;
                 await buffer.CopyToAsync(originalBody);
                 return;
             }
 
-            // Cifrar el body JSON
-            var encrypted = encryptionService.Encrypt(responseBody);
+            // Cifrar usando un scope para resolver el servicio Scoped correctamente
+            string encrypted;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var encryptionService = scope.ServiceProvider
+                    .GetRequiredService<IEncryptionService>();
+                encrypted = encryptionService.Encrypt(responseBody);
+            }
+
             var wrappedJson = JsonSerializer.Serialize(
                 new { data = encrypted },
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
             var wrappedBytes = Encoding.UTF8.GetBytes(wrappedJson);
 
-            // Actualizar Content-Length y escribir en el stream original
+            // Actualizar Content-Length — los demás headers (CORS, Content-Type, etc.)
+            // ya están escritos en context.Response.Headers y se preservan automáticamente
             context.Response.ContentLength = wrappedBytes.Length;
+
+            // Restaurar el stream original y escribir el body cifrado
             context.Response.Body = originalBody;
             await originalBody.WriteAsync(wrappedBytes);
 
             _logger.LogDebug(
-                "Respuesta cifrada correctamente. Path: {Path} StatusCode: {Status}",
+                "Respuesta cifrada. Path: {Path} StatusCode: {Status}",
                 context.Request.Path, context.Response.StatusCode);
         }
         catch (Exception ex)
@@ -130,30 +122,17 @@ public class EncryptionResponseMiddleware
             _logger.LogError(ex,
                 "Error al cifrar la respuesta. Path: {Path}", context.Request.Path);
 
-            // Restaurar stream original y dejar pasar la respuesta sin cifrar
-            // para no romper el flujo en caso de error inesperado en el cifrado
+            // Restaurar stream original en caso de error
             context.Response.Body = originalBody;
             buffer.Position = 0;
             await buffer.CopyToAsync(originalBody);
         }
     }
 
-    // ─── Helpers privados ─────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Verifica si la ruta corresponde a un endpoint crítico.
-    /// </summary>
     private static bool IsEncryptedRoute(PathString path)
-    {
-        return _encryptedRoutes.Any(route =>
+        => _encryptedRoutes.Any(route =>
             path.StartsWithSegments(route, StringComparison.OrdinalIgnoreCase));
-    }
 
-    /// <summary>
-    /// Verifica si el código de estado HTTP es exitoso (200–299).
-    /// </summary>
     private static bool IsSuccessStatusCode(int statusCode)
-    {
-        return statusCode is >= 200 and <= 299;
-    }
+        => statusCode is >= 200 and <= 299;
 }

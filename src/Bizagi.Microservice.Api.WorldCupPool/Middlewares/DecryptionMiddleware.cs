@@ -8,30 +8,16 @@ namespace Bizagi.Microservice.Api.WorldCupPool.Middlewares;
 
 /// <summary>
 /// Middleware de descifrado de requests para los endpoints críticos.
-/// Intercepta solicitudes POST con body cifrado en formato <c>{ "data": "&lt;Base64 AES&gt;" }</c>,
-/// descifra el payload y reemplaza el stream de lectura antes de que llegue al controller.
-///
-/// Endpoints críticos cubiertos:
-/// <list type="bullet">
-///   <item>POST api/v1/auth/register</item>
-///   <item>POST api/v1/auth/login</item>
-///   <item>POST api/v1/predictions</item>
-///   <item>POST api/v1/admin/matches/{id}/result</item>
-/// </list>
-///
-/// Cuando <see cref="EncryptionOptions.Enabled"/> es false (desarrollo),
-/// el middleware es completamente transparente.
+/// Intercepta el body cifrado <c>{ "data": "&lt;Base64 AES&gt;" }</c>,
+/// lo descifra y reemplaza el stream antes de que llegue al controller.
 /// </summary>
 public class DecryptionMiddleware
 {
-    private readonly RequestDelegate    _next;
-    private readonly EncryptionOptions  _options;
+    private readonly RequestDelegate _next;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly EncryptionOptions _options;
     private readonly ILogger<DecryptionMiddleware> _logger;
 
-    /// <summary>
-    /// Rutas críticas donde se aplica el descifrado.
-    /// Se evalúan como prefijos para cubrir variantes como /api/v1/admin/matches/1/result.
-    /// </summary>
     private static readonly string[] _encryptedRoutes =
     {
         "/api/v1/auth/register",
@@ -41,43 +27,74 @@ public class DecryptionMiddleware
     };
 
     /// <summary>
-    /// Inicializa una nueva instancia del middleware de descifrado.
+    /// Inicializa el middleware usando <see cref="IServiceScopeFactory"/>
+    /// para evitar el error "Cannot resolve scoped service from root provider".
     /// </summary>
-    /// <param name="next">Siguiente delegado en el pipeline.</param>
-    /// <param name="options">Opciones tipadas de configuración de cifrado.</param>
-    /// <param name="logger">Logger del middleware.</param>
     public DecryptionMiddleware(
         RequestDelegate next,
+        IServiceScopeFactory scopeFactory,
         IOptions<EncryptionOptions> options,
         ILogger<DecryptionMiddleware> logger)
     {
-        _next              = next;
-        _options           = options.Value;
-        _logger            = logger;
+        _next = next;
+        _scopeFactory = scopeFactory;
+        _options = options.Value;
+        _logger = logger;
     }
 
     /// <summary>
-    /// Intercepta la solicitud. Si el cifrado está habilitado, la ruta es crítica
-    /// y el método es POST, descifra el body y reemplaza el stream.
+    /// Intercepta el request, descifra el body si es una ruta crítica con cifrado habilitado
+    /// y reemplaza el stream con el JSON original antes de pasar al controller.
     /// </summary>
-    /// <param name="context">Contexto HTTP de la solicitud.</param>
-    /// <param name="encryptionService">Servicio de cifrado inyectado para realizar el descifrado.</param>
-    public async Task InvokeAsync(
-    HttpContext context,
-    IEncryptionService encryptionService)
+    public async Task InvokeAsync(HttpContext context)
     {
-        if (!_options.Enabled
-            || !HttpMethods.IsPost(context.Request.Method)
-            || !IsEncryptedRoute(context.Request.Path)
-            || !IsJsonContentType(context.Request.ContentType))
+        // Log diagnóstico para identificar por qué el middleware no intercepta
+        _logger.LogDebug(
+            "[Decryption] Path: {Path} | Method: {Method} | ContentType: {CT} | Enabled: {Enabled} | IsRoute: {IsRoute}",
+            context.Request.Path,
+            context.Request.Method,
+            context.Request.ContentType ?? "NULL",
+            _options.Enabled,
+            IsEncryptedRoute(context.Request.Path));
+
+        // Si el cifrado está deshabilitado, pasar sin modificar
+        if (!_options.Enabled)
         {
+            _logger.LogDebug("[Decryption] Cifrado deshabilitado — pasando sin modificar.");
+            await _next(context);
+            return;
+        }
+
+        // Solo aplica a métodos POST
+        if (!HttpMethods.IsPost(context.Request.Method))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Solo aplica a rutas críticas
+        if (!IsEncryptedRoute(context.Request.Path))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Verificación relajada del Content-Type:
+        // Angular puede enviar "application/json", "application/json; charset=utf-8", etc.
+        // También acepta null/vacío y lo intenta procesar igual para mayor tolerancia.
+        var contentType = context.Request.ContentType ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(contentType)
+            && !contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(
+                "[Decryption] Content-Type no es JSON: '{CT}' — pasando sin modificar.",
+                contentType);
             await _next(context);
             return;
         }
 
         try
         {
-            // Habilitar buffering para poder releer el stream si es necesario
             context.Request.EnableBuffering();
 
             using var reader = new StreamReader(
@@ -89,8 +106,12 @@ public class DecryptionMiddleware
             var rawBody = await reader.ReadToEndAsync();
             context.Request.Body.Position = 0;
 
+            _logger.LogDebug("[Decryption] Body recibido ({Length} bytes): {Body}",
+                rawBody.Length, rawBody.Length > 200 ? rawBody[..200] + "..." : rawBody);
+
             if (string.IsNullOrWhiteSpace(rawBody))
             {
+                _logger.LogWarning("[Decryption] Body vacío — pasando sin modificar.");
                 await _next(context);
                 return;
             }
@@ -100,24 +121,32 @@ public class DecryptionMiddleware
 
             if (wrapper is null || string.IsNullOrWhiteSpace(wrapper.Data))
             {
-                // No tiene formato cifrado — puede ser Swagger en desarrollo
-                // con Enabled=false o un request mal formado
                 _logger.LogWarning(
-                    "Request a ruta crítica sin payload cifrado. Path: {Path} Method: {Method}",
-                    context.Request.Path, context.Request.Method);
+                    "[Decryption] Body no tiene formato cifrado {{ \"data\": \"...\" }}. " +
+                    "Path: {Path}. Body: {Body}",
+                    context.Request.Path,
+                    rawBody.Length > 300 ? rawBody[..300] : rawBody);
 
                 await WriteErrorAsync(context, StatusCodes.Status400BadRequest,
                     "El payload debe estar cifrado. Formato esperado: { \"data\": \"<Base64>\" }");
                 return;
             }
 
-            // Descifrar
-            var decryptedJson = encryptionService.Decrypt(wrapper.Data);
+            // Descifrar usando un scope para resolver el servicio Scoped correctamente
+            string decryptedJson;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var encryptionService = scope.ServiceProvider
+                    .GetRequiredService<IEncryptionService>();
+                decryptedJson = encryptionService.Decrypt(wrapper.Data);
+            }
+
+            _logger.LogDebug("[Decryption] JSON descifrado: {Json}", decryptedJson);
 
             if (string.IsNullOrWhiteSpace(decryptedJson))
             {
-                _logger.LogWarning(
-                    "Descifrado resultó en payload vacío. Path: {Path}", context.Request.Path);
+                _logger.LogWarning("[Decryption] Descifrado resultó vacío. Path: {Path}",
+                    context.Request.Path);
 
                 await WriteErrorAsync(context, StatusCodes.Status400BadRequest,
                     "El payload cifrado no produjo contenido válido. Verifica la llave y el IV.");
@@ -125,49 +154,33 @@ public class DecryptionMiddleware
             }
 
             // Reemplazar el stream con el JSON descifrado
-            var decryptedBytes  = Encoding.UTF8.GetBytes(decryptedJson);
+            var decryptedBytes = Encoding.UTF8.GetBytes(decryptedJson);
             var decryptedStream = new MemoryStream(decryptedBytes);
 
-            context.Request.Body          = decryptedStream;
+            context.Request.Body = decryptedStream;
             context.Request.ContentLength = decryptedBytes.Length;
 
-            _logger.LogDebug("Payload descifrado correctamente. Path: {Path}", context.Request.Path);
+            _logger.LogInformation("[Decryption] ✓ Payload descifrado correctamente. Path: {Path}",
+                context.Request.Path);
 
             await _next(context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Error inesperado al descifrar el body. Path: {Path}", context.Request.Path);
+            _logger.LogError(ex, "[Decryption] Error al descifrar. Path: {Path}",
+                context.Request.Path);
 
             await WriteErrorAsync(context, StatusCodes.Status400BadRequest,
                 "No se pudo procesar el payload cifrado. Verifica la llave y el IV.");
         }
     }
 
-    // ─── Helpers privados ─────────────────────────────────────────────────────
+    // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Verifica si la ruta de la solicitud corresponde a un endpoint crítico cifrado.
-    /// </summary>
     private static bool IsEncryptedRoute(PathString path)
-    {
-        return _encryptedRoutes.Any(route =>
+        => _encryptedRoutes.Any(route =>
             path.StartsWithSegments(route, StringComparison.OrdinalIgnoreCase));
-    }
 
-    /// <summary>
-    /// Verifica si el Content-Type es application/json.
-    /// </summary>
-    private static bool IsJsonContentType(string? contentType)
-    {
-        return !string.IsNullOrWhiteSpace(contentType)
-               && contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Intenta deserializar el body como wrapper cifrado <c>{ "data": "..." }</c>.
-    /// </summary>
     private static EncryptedWrapper? TryDeserializeWrapper(string json)
     {
         try
@@ -175,18 +188,12 @@ public class DecryptionMiddleware
             return JsonSerializer.Deserialize<EncryptedWrapper>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
-        catch
-        {
-            return null;
-        }
+        catch { return null; }
     }
 
-    /// <summary>
-    /// Escribe una respuesta de error JSON estandarizada.
-    /// </summary>
     private static async Task WriteErrorAsync(HttpContext context, int statusCode, string message)
     {
-        context.Response.StatusCode  = statusCode;
+        context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
         var body = JsonSerializer.Serialize(
@@ -196,7 +203,6 @@ public class DecryptionMiddleware
         await context.Response.WriteAsync(body);
     }
 
-    /// <summary>Modelo interno del wrapper cifrado recibido del cliente.</summary>
     private sealed class EncryptedWrapper
     {
         public string? Data { get; set; }

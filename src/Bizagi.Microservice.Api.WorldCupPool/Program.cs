@@ -123,7 +123,7 @@ if (swaggerEnabled)
             Version = "v1",
             Description = "API para la gestión de predicciones del Mundial de Fútbol. " +
                           "⚠️ En desarrollo (Encryption:Enabled=false) los endpoints críticos " +
-                          "aceptan y devuelven JSON en texto plano — Swagger funciona con normalidad."
+                          "aceptan y devuelven JSON en texto plano."
         });
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -163,26 +163,25 @@ var app = builder.Build();
 
 // ─── Pipeline de middlewares ───────────────────────────────────────────────
 //
-//  Orden crítico:
+//  Orden corregido:
 //
-//  1. GlobalException          → captura cualquier error de todo el pipeline
-//  2. EncryptionResponse       → envuelve el stream de respuesta ANTES de ejecutar
-//                                el resto, para poder capturar y cifrar lo que
-//                                escriba el controller
-//  3. Decryption               → descifra el body del request entrante
-//  4. RateLimiting             → evalúa límites
-//  5. Swagger                  → solo en desarrollo
-//  6. HttpsRedirection
-//  7. CORS
+//  1. HTTPS Redirection        → redirige a HTTPS antes de cualquier procesamiento
+//  2. CORS                     → agrega headers Access-Control-Allow-Origin PRIMERO
+//                                antes de que cualquier middleware custom pueda
+//                                interferir con el stream de respuesta
+//  3. Swagger                  → solo en desarrollo
+//  4. GlobalException          → captura errores del resto del pipeline
+//  5. EncryptionResponse       → cifra la respuesta (el stream ya tiene los headers CORS)
+//  6. Decryption               → descifra el body del request
+//  7. RateLimiting             → evalúa límites
 //  8. Authentication           → valida JWT
 //  9. Authorization            → valida roles
-// 10. Controllers              → procesa la solicitud y escribe la respuesta
-//                                (que será capturada y cifrada por el paso 2)
+// 10. Controllers              → procesa la solicitud
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseMiddleware<EncryptionResponseMiddleware>(); // ← cifra la respuesta
-app.UseMiddleware<DecryptionMiddleware>();          // ← descifra el request
-app.UseMiddleware<RateLimitingMiddleware>();
+app.UseHttpsRedirection();
+
+// CORS debe ir ANTES de los middlewares custom que modifican el stream de respuesta
+app.UseCors("WorldCupPoolCors");
 
 if (swaggerEnabled)
 {
@@ -194,8 +193,11 @@ if (swaggerEnabled)
     });
 }
 
-app.UseHttpsRedirection();
-app.UseCors("WorldCupPoolCors");
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<EncryptionResponseMiddleware>(); // cifra la respuesta
+app.UseMiddleware<DecryptionMiddleware>();          // descifra el request
+app.UseMiddleware<RateLimitingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

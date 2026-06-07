@@ -27,29 +27,32 @@ public class AdminDashboardRepository : IAdminDashboardRepository
     public async Task<AdminDashboardDto> GetDashboardAsync()
     {
         // Ejecutar todas las consultas de conteo en paralelo para reducir latencia total.
-        var totalUsersTask              = _context.Users.CountAsync(u => u.State && u.IsActive);
-        var totalMatchesTask            = _context.Matches.CountAsync(m => m.State);
-        var finishedMatchesTask         = _context.Matches.CountAsync(m => m.State && m.Status == MatchStatus.Finished);
-        var pendingMatchesTask          = _context.Matches.CountAsync(m => m.State && m.Status == MatchStatus.Scheduled);
-        var totalPredictionsTask        = _context.Predictions.CountAsync(p => p.State);
-        var calculatedPredictionsTask   = _context.Predictions.CountAsync(p => p.State && p.IsCalculated);
+        var totalUsers = await _context.Users
+        .CountAsync(u => u.State && u.IsActive);
 
-        await Task.WhenAll(
-            totalUsersTask,
-            totalMatchesTask,
-            finishedMatchesTask,
-            pendingMatchesTask,
-            totalPredictionsTask,
-            calculatedPredictionsTask);
+        var totalMatches = await _context.Matches
+            .CountAsync(m => m.State);
+
+        var finishedMatches = await _context.Matches
+            .CountAsync(m => m.State && m.Status == MatchStatus.Finished);
+
+        var pendingMatches = await _context.Matches
+            .CountAsync(m => m.State && m.Status == MatchStatus.Scheduled);
+
+        var totalPredictions = await _context.Predictions
+            .CountAsync(p => p.State);
+
+        var calculatedPredictions = await _context.Predictions
+            .CountAsync(p => p.State && p.IsCalculated);
 
         return new AdminDashboardDto
         {
-            TotalUsers             = await totalUsersTask,
-            TotalMatches           = await totalMatchesTask,
-            FinishedMatches        = await finishedMatchesTask,
-            PendingMatches         = await pendingMatchesTask,
-            TotalPredictions       = await totalPredictionsTask,
-            CalculatedPredictions  = await calculatedPredictionsTask
+            TotalUsers = totalUsers,
+            TotalMatches = totalMatches,
+            FinishedMatches = finishedMatches,
+            PendingMatches = pendingMatches,
+            TotalPredictions = totalPredictions,
+            CalculatedPredictions = calculatedPredictions
         };
     }
 }
