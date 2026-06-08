@@ -163,7 +163,7 @@ public class DecryptionMiddleware
             _logger.LogInformation("[Decryption] ✓ Payload descifrado correctamente. Path: {Path}",
                 context.Request.Path);
 
-            await _next(context);
+            
         }
         catch (Exception ex)
         {
@@ -173,6 +173,8 @@ public class DecryptionMiddleware
             await WriteErrorAsync(context, StatusCodes.Status400BadRequest,
                 "No se pudo procesar el payload cifrado. Verifica la llave y el IV.");
         }
+
+        await _next(context);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

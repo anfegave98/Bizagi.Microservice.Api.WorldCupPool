@@ -8,14 +8,10 @@ namespace Bizagi.Microservice.Api.WorldCupPool.Middlewares;
 
 /// <summary>
 /// Middleware de cifrado de respuestas para los endpoints críticos.
-/// Intercepta la respuesta JSON del controller, la cifra con AES-256-CBC
-/// y la reemplaza con el wrapper <c>{ "data": "&lt;Base64&gt;" }</c>.
-///
-/// Preserva todos los headers de respuesta existentes (incluyendo CORS)
-/// al reemplazar únicamente el body, no el stream completo de respuesta.
-///
-/// Cuando <see cref="EncryptionOptions.Enabled"/> es false, el middleware
-/// es completamente transparente.
+/// Captura el body de la respuesta DESPUÉS de que todo el pipeline ejecutó,
+/// lee el status code real y solo cifra si es una respuesta exitosa (2xx).
+/// Las respuestas de error (4xx, 5xx) pasan sin cifrar para que el frontend
+/// pueda leer el mensaje de error directamente.
 /// </summary>
 public class EncryptionResponseMiddleware
 {
@@ -33,10 +29,8 @@ public class EncryptionResponseMiddleware
     };
 
     /// <summary>
-    /// Inicializa el middleware. Usa <see cref="IServiceScopeFactory"/> en lugar de
-    /// <see cref="IEncryptionService"/> directamente para evitar el error
-    /// "Cannot resolve scoped service from root provider", ya que los middlewares
-    /// son singleton por naturaleza del pipeline de ASP.NET Core.
+    /// Inicializa el middleware usando <see cref="IServiceScopeFactory"/> para evitar
+    /// el error "Cannot resolve scoped service from root provider".
     /// </summary>
     public EncryptionResponseMiddleware(
         RequestDelegate next,
@@ -51,8 +45,8 @@ public class EncryptionResponseMiddleware
     }
 
     /// <summary>
-    /// Captura la respuesta del controller en un buffer, la cifra y la reemplaza
-    /// preservando todos los headers HTTP originales (incluyendo CORS).
+    /// Intercepta la respuesta, ejecuta todo el pipeline incluyendo manejo de errores,
+    /// y luego decide si cifrar basándose en el status code resultante.
     /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
@@ -64,14 +58,16 @@ public class EncryptionResponseMiddleware
             return;
         }
 
-        // Sustituir el body de la respuesta por un buffer
+        // Reemplazar el stream de respuesta con un buffer para capturar todo
         var originalBody = context.Response.Body;
         using var buffer = new MemoryStream();
         context.Response.Body = buffer;
 
         try
         {
-            // Ejecutar el resto del pipeline — el controller escribe en el buffer
+            // Ejecutar TODO el pipeline: controllers, GlobalExceptionMiddleware, etc.
+            // Al terminar, el buffer tiene el body completo y context.Response.StatusCode
+            // refleja el status code REAL de la respuesta (200, 400, 401, etc.)
             await _next(context);
 
             // Leer el body capturado
@@ -79,18 +75,25 @@ public class EncryptionResponseMiddleware
             using var reader = new StreamReader(buffer, Encoding.UTF8);
             var responseBody = await reader.ReadToEndAsync();
 
-            // Solo cifrar respuestas JSON exitosas (2xx)
+            // Restaurar el stream original antes de escribir
+            context.Response.Body = originalBody;
+
+            // ── Respuestas de error (4xx, 5xx) o body vacío: NO cifrar ───────
+            // El frontend necesita leer el mensaje de error en texto plano
             if (!IsSuccessStatusCode(context.Response.StatusCode)
                 || string.IsNullOrWhiteSpace(responseBody))
             {
-                // Error o body vacío: devolver sin cifrar preservando headers
-                buffer.Position = 0;
-                context.Response.Body = originalBody;
-                await buffer.CopyToAsync(originalBody);
+                _logger.LogDebug(
+                    "[EncryptionResponse] Status {Status} — devolviendo sin cifrar. Path: {Path}",
+                    context.Response.StatusCode, context.Request.Path);
+
+                var errorBytes = Encoding.UTF8.GetBytes(responseBody);
+                context.Response.ContentLength = errorBytes.Length;
+                await originalBody.WriteAsync(errorBytes);
                 return;
             }
 
-            // Cifrar usando un scope para resolver el servicio Scoped correctamente
+            // ── Respuestas exitosas (2xx): cifrar ────────────────────────────
             string encrypted;
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -104,28 +107,22 @@ public class EncryptionResponseMiddleware
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
             var wrappedBytes = Encoding.UTF8.GetBytes(wrappedJson);
-
-            // Actualizar Content-Length — los demás headers (CORS, Content-Type, etc.)
-            // ya están escritos en context.Response.Headers y se preservan automáticamente
             context.Response.ContentLength = wrappedBytes.Length;
-
-            // Restaurar el stream original y escribir el body cifrado
-            context.Response.Body = originalBody;
             await originalBody.WriteAsync(wrappedBytes);
 
             _logger.LogDebug(
-                "Respuesta cifrada. Path: {Path} StatusCode: {Status}",
-                context.Request.Path, context.Response.StatusCode);
+                "[EncryptionResponse] Respuesta cifrada (status {Status}). Path: {Path}",
+                context.Response.StatusCode, context.Request.Path);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Error al cifrar la respuesta. Path: {Path}", context.Request.Path);
+                "[EncryptionResponse] Error inesperado. Path: {Path}",
+                context.Request.Path);
 
-            // Restaurar stream original en caso de error
             context.Response.Body = originalBody;
-            buffer.Position = 0;
-            await buffer.CopyToAsync(originalBody);
+
+            throw;
         }
     }
 

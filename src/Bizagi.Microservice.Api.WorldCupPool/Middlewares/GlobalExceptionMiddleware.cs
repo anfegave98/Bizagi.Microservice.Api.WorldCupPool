@@ -45,7 +45,7 @@ public class GlobalExceptionMiddleware
     {
         var (statusCode, message) = exception switch
         {
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "No autorizado."),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, exception.Message),
             InvalidOperationException e when e.Message.Contains("inactivo") => (HttpStatusCode.Forbidden, exception.Message),
             InvalidOperationException => (HttpStatusCode.BadRequest, exception.Message),
             KeyNotFoundException => (HttpStatusCode.NotFound, exception.Message),
