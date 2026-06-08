@@ -32,8 +32,16 @@ public class PredictionService : IPredictionService
         var match = await _matchRepository.GetByIdAsync(dto.IdMatch)
             ?? throw new KeyNotFoundException($"El partido con Id {dto.IdMatch} no existe o no está disponible.");
 
+        // Validación 1: el partido no debe estar finalizado
         if (match.Status == MatchStatus.Finished)
-            throw new InvalidOperationException("No se puede registrar o modificar una predicción para un partido que ya ha finalizado.");
+            throw new InvalidOperationException(
+                "No se puede registrar o modificar una predicción para un partido que ya ha finalizado.");
+
+        // Validación 2: la fecha del partido no debe haber pasado
+        // Se compara en UTC para consistencia con los datos almacenados
+        if (DateTime.UtcNow >= match.MatchDate)
+            throw new InvalidOperationException(
+                "No se puede registrar o modificar una predicción para un partido que ya ha comenzado.");
 
         var existing = await _predictionRepository.GetByUserAndMatchAsync(userId, dto.IdMatch);
 
@@ -71,7 +79,6 @@ public class PredictionService : IPredictionService
     public async Task<IEnumerable<PredictionDto>> GetMineAsync(int userId)
     {
         var predictions = await _predictionRepository.GetAllByUserAsync(userId);
-
         return predictions.Select(p => MapToDto(p, p.Match));
     }
 
