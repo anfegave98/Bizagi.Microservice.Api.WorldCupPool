@@ -54,4 +54,14 @@ public class MatchDto
     /// Estado actual del partido: "Scheduled" o "Finished".
     /// </summary>
     public string Status { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Goles reales del equipo local. Null si el partido aún no ha finalizado.
+    /// </summary>
+    public int? RealHomeGoals { get; set; }
+
+    /// <summary>
+    /// Goles reales del equipo visitante. Null si el partido aún no ha finalizado.
+    /// </summary>
+    public int? RealAwayGoals { get; set; }
 }

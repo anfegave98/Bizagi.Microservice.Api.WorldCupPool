@@ -36,7 +36,10 @@ public class MatchService : IMatchService
             AwayTeamName = m.AwayTeamName,
             MatchDate = m.MatchDate,
             RoundName = m.RoundName,
-            Status = m.Status
+            Status = m.Status,
+            // Resultado real — null si el partido aún no ha finalizado
+            RealHomeGoals = m.MatchResult?.HomeGoals,
+            RealAwayGoals = m.MatchResult?.AwayGoals,
         });
     }
 }

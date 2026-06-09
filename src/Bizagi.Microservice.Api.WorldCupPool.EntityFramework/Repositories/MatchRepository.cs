@@ -25,6 +25,7 @@ public class MatchRepository : IMatchRepository
     {
         return await _context.Matches
             .Include(m => m.Group)
+            .Include(m => m.MatchResult)
             .Where(m => m.State)
             .OrderBy(m => m.MatchDate)
             .ToListAsync();
@@ -35,6 +36,7 @@ public class MatchRepository : IMatchRepository
     {
         return await _context.Matches
             .Include(m => m.Group)
+            .Include(m => m.MatchResult)
             .FirstOrDefaultAsync(m => m.Id == matchId && m.State);
     }
 
